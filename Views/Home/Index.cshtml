@@ -1,5 +1,12 @@
 @{
     ViewData["Title"] = "Student Photo Taker";
+    List<string> list = new List<string>() {"9A","9B","9C","9D","9D","9E","9F","9G","9H","9I","9J","9K","9L","9M","9N",
+    "10A","10B","10C","10D","10E","10F","10G","10H","10I","10J",
+    "11A","11B","11C","11D","11E","11F","11G","11H","11I","11J",
+    "12A","12B","12C","12D","12E","12F","12G","12H","12I","12J",
+};
+    
+  
 }
 
 <div class="container-fluid">
@@ -17,11 +24,9 @@
         <div class="col-md-6">
       <div class="row">
                     <select name="sinif" id="sinif" class="form-select" style="display:inline-block !important;width:auto !important">
-                        <option value="9A">9A</option>
-                        <option value="9B">9B</option>
-                        <option value="9C">9C</option>
-                        <option value="10A">10A</option>
-                        <option value="11A">11A</option>
+                       @foreach(var sinif in list){
+                            <option value="@sinif">@sinif</option>
+                       }
 
                     </select>
                 

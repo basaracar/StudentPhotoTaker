@@ -1,0 +1,53 @@
+@model StudentPhotoTaker.Models.FotolarViewModel
+
+@{
+    ViewData["Title"] = "Fotolar";
+    string durum;
+}
+
+<div class="row">
+    <div class="col-md-3">
+        <h2>Sınıflar</h2>
+        <select name="sec" id="sec" class="form-select">
+        @foreach (var folder in Model.Folders)
+            {
+             durum=Model.CurrentFolder == folder ? "selected" : "";
+               <option value="@folder" selected="@(durum == "selected")" >@folder</option>
+                
+            
+            }
+        </select>
+    
+    </div>
+    <div class="col-md-9">
+        @if (Model.Photos != null)
+        {
+            <h2>@Model.CurrentFolder</h2>
+            <div class="row">
+                @foreach (var photo in Model.Photos)
+                {
+                    <div class="col-xs-2 col-md-3 mt-1">
+                        <img src="@photo" class="img-fluid img-thumbnail" />
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            <h2>Lütfen bir sınıf seçin.</h2>
+        }
+    </div>
+</div>
+@section Scripts {
+
+  <script>
+        const sec = document.getElementById("sec");
+        sec.addEventListener("change", function () {
+        
+            window.location.href = "/Fotolar/"+this.value;
+        
+        });
+
+
+  </script>
+}

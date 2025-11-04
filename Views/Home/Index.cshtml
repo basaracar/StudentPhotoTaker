@@ -1,0 +1,101 @@
+﻿@{
+    ViewData["Title"] = "Student Photo Taker";
+}
+
+<div class="container">
+
+    <div class="row">
+     <div class="col-sm-12 col-md-6">
+     <video id="video" width="640" height="480" autoplay style="display: none;"></video>
+           <canvas id="canvas" width="640" height="480" style="border: 1px solid #ccc; max-width: 100%;"></canvas>
+           <canvas id="hiddenCanvas" width="266" height="342" style="display: none;"></canvas>
+        </div>  
+         <hr />
+        <div class="col-sm-12 col-md-6">
+         <div class="form-group row"></div><div class="col-md-2">
+        <select name="sinif" id="sinif" class="form-select">
+            <option value="9A">9A</option>
+            <option value="9B">9B</option>
+            <option value="9C">9C</option>
+            <option value="10A">10A</option>
+            <option value="11A">11A</option>
+            
+        </select>
+        </div>
+        <div class="col-md-10">
+           
+           
+                <input type="number" id="studentId" class="form-control" placeholder="Numara" />
+            </div>
+            <button id="Kaydet" class="btn btn-primary mt-2">Kaydet</button>
+            <div id="result"></div>
+            
+        
+        </div>
+       </div>
+    </div>
+</div>
+
+@section Scripts {
+
+  <script>
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+    const context = canvas.getContext('2d');
+    const hiddenCanvas = document.getElementById('hiddenCanvas');
+    const hiddenContext = hiddenCanvas.getContext('2d');
+    const studentIdInput = document.getElementById('studentId');
+    const sinifSelect = document.getElementById('sinif');
+    const saveButton = document.getElementById('Kaydet');
+    const resultDiv = document.getElementById('result');
+
+    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+        navigator.mediaDevices.getUserMedia({ video: true }).then(function(stream) {
+            video.srcObject = stream;
+            video.play();
+            draw();
+        });
+    }
+
+    function draw() {
+        context.drawImage(video, 0, 0, 640, 480);
+        
+        // Draw the guide
+        context.strokeStyle = 'red';
+        context.lineWidth = 2;
+        context.strokeRect(187, 69, 266, 342);
+
+        requestAnimationFrame(draw);
+    }
+
+    saveButton.addEventListener('click', function() {
+        const studentId = studentIdInput.value;
+        if (!studentId) {
+            alert('Please enter a student ID.');
+            return;
+        }
+
+        // Draw the cropped image to the hidden canvas
+        hiddenContext.drawImage(video, 187, 69, 266, 342, 0, 0, 266, 342);
+
+        const dataUrl = hiddenCanvas.toDataURL('image/jpeg');
+        fetch('/Home/SavePhoto', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ studentId: studentId, photo: dataUrl ,sinif:sinifSelect.value})
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.filePath) {
+                resultDiv.innerHTML = `<img src="${data.filePath}" class="img-fluid" />`;
+            } else {
+                resultDiv.textContent = 'Hata Var';
+            }
+        });
+    });
+</script>
+
+    
+}

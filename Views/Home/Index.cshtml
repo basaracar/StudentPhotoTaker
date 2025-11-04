@@ -6,9 +6,9 @@
 
     <div class="row">
      <div class="col-sm-12 col-md-6">
-     <video id="video" width="640" height="480" autoplay style="display: none;"></video>
-           <canvas id="canvas" width="640" height="480" style="border: 1px solid #ccc; max-width: 100%;"></canvas>
-           <canvas id="hiddenCanvas" width="266" height="342" style="display: none;"></canvas>
+     <video id="video" autoplay playsinline style="display: none;"></video>
+           <canvas id="canvas" style="border: 1px solid #ccc; max-width: 100%;"></canvas>
+           <canvas id="hiddenCanvas" style="display: none;"></canvas>
            <button id="switchCamera" class="btn btn-secondary mt-2">Kamera Değiştir</button>
         </div>  
          <hr />
@@ -71,8 +71,11 @@
         navigator.mediaDevices.getUserMedia(constraints).then(function(stream) {
             video.srcObject = stream;
             currentStream = stream;
-            video.play();
-            requestAnimationFrame(draw);
+            video.addEventListener('loadedmetadata', () => {
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                requestAnimationFrame(draw);
+            });
         }).catch(function(error) {
             console.error('Error starting camera:', error);
         });
@@ -91,12 +94,23 @@
     });
 
     function draw() {
-        context.drawImage(video, 0, 0, 640, 480);
+        context.drawImage(video, 0, 0, canvas.width, canvas.height);
         
-        // Draw the guide
+        const photoAspectRatio = 133 / 171;
+        let rectWidth = canvas.width * 0.6;
+        let rectHeight = rectWidth / photoAspectRatio;
+
+        if (rectHeight > canvas.height * 0.8) {
+            rectHeight = canvas.height * 0.8;
+            rectWidth = rectHeight * photoAspectRatio;
+        }
+
+        const rectX = (canvas.width - rectWidth) / 2;
+        const rectY = (canvas.height - rectHeight) / 2;
+
         context.strokeStyle = 'red';
         context.lineWidth = 2;
-        context.strokeRect(187, 69, 266, 342);
+        context.strokeRect(rectX, rectY, rectWidth, rectHeight);
 
         requestAnimationFrame(draw);
     }
@@ -108,8 +122,22 @@
             return;
         }
 
-        // Draw the cropped image to the hidden canvas
-        hiddenContext.drawImage(video, 187, 69, 266, 342, 0, 0, 266, 342);
+        const photoAspectRatio = 133 / 171;
+        let rectWidth = canvas.width * 0.6;
+        let rectHeight = rectWidth / photoAspectRatio;
+
+        if (rectHeight > canvas.height * 0.8) {
+            rectHeight = canvas.height * 0.8;
+            rectWidth = rectHeight * photoAspectRatio;
+        }
+
+        const rectX = (canvas.width - rectWidth) / 2;
+        const rectY = (canvas.height - rectHeight) / 2;
+
+        hiddenCanvas.width = rectWidth;
+        hiddenCanvas.height = rectHeight;
+
+        hiddenContext.drawImage(video, rectX, rectY, rectWidth, rectHeight, 0, 0, rectWidth, rectHeight);
 
         const dataUrl = hiddenCanvas.toDataURL('image/jpeg');
         fetch('/Home/SavePhoto', {

@@ -5,158 +5,158 @@
 <div class="container">
 
     <div class="row">
-     <div class="col-sm-12 col-md-6">
-     <video id="video" autoplay playsinline style="display: none;"></video>
-           <canvas id="canvas" style="border: 1px solid #ccc; max-width: 100%;"></canvas>
-           <canvas id="hiddenCanvas" style="display: none;"></canvas>
-          
-        </div>  
-         <hr />
         <div class="col-sm-12 col-md-6">
-         <div class="form-group row"></div><div class="col-md-2">
-        <select name="sinif" id="sinif" class="form-select">
-            <option value="9A">9A</option>
-            <option value="9B">9B</option>
-            <option value="9C">9C</option>
-            <option value="10A">10A</option>
-            <option value="11A">11A</option>
-            
-        </select>
+            <video id="video" autoplay playsinline style="display: none;"></video>
+            <canvas id="canvas" style="border: 1px solid #ccc; max-width: 100%;"></canvas>
+            <canvas id="hiddenCanvas" style="display: none;"></canvas>
+
         </div>
-        <div class="col-md-10">
-           
-           
-                <input type="number" id="studentId" class="form-control" placeholder="Numara" />
+        <hr />
+        <div class="col-md-6">
+            <div class="row">
+                <div class="col-xs-6">
+                    <select name="sinif" id="sinif" class="form-select" style="display:inline-block !important;width:auto !important">
+                        <option value="9A">9A</option>
+                        <option value="9B">9B</option>
+                        <option value="9C">9C</option>
+                        <option value="10A">10A</option>
+                        <option value="11A">11A</option>
+
+                    </select>
+                
+                    <input type="number" id="studentId" class="form-control" placeholder="Numara" style="display:inline-block !important;width:auto !important" />
+                     <button id="switchCamera" class="btn btn-secondary" style="display:inline-block !important;width:auto !important">Kamera Değiştir</button>
+                </div>
+               <button id="Kaydet"
+                    class="btn btn-primary mt-2">Kaydet</button>
+                <div id="result"></div>
+
+
             </div>
-             <button id="switchCamera" class="btn btn-secondary mt-2">Kamera Değiştir</button><button id="Kaydet" class="btn btn-primary mt-2">Kaydet</button>
-            <div id="result"></div>
-            
-        
         </div>
-       </div>
     </div>
 </div>
 
 @section Scripts {
 
-  <script>
-    const video = document.getElementById('video');
-    const canvas = document.getElementById('canvas');
-    const context = canvas.getContext('2d');
-    const hiddenCanvas = document.getElementById('hiddenCanvas');
-    const hiddenContext = hiddenCanvas.getContext('2d');
-    const studentIdInput = document.getElementById('studentId');
-    const sinifSelect = document.getElementById('sinif');
-    const saveButton = document.getElementById('Kaydet');
-    const switchCameraButton = document.getElementById('switchCamera');
-    const resultDiv = document.getElementById('result');
+    <script>
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+        const context = canvas.getContext('2d');
+        const hiddenCanvas = document.getElementById('hiddenCanvas');
+        const hiddenContext = hiddenCanvas.getContext('2d');
+        const studentIdInput = document.getElementById('studentId');
+        const sinifSelect = document.getElementById('sinif');
+        const saveButton = document.getElementById('Kaydet');
+        const switchCameraButton = document.getElementById('switchCamera');
+        const resultDiv = document.getElementById('result');
 
-    let currentStream;
-    let videoDevices = [];
-    let currentDeviceIndex = 0;
+        let currentStream;
+        let videoDevices = [];
+        let currentDeviceIndex = 0;
 
-    function stopMediaTracks(stream) {
-        stream.getTracks().forEach(track => {
-            track.stop();
-        });
-    }
-
-    function startCamera(deviceId) {
-        if (currentStream) {
-            stopMediaTracks(currentStream);
-        }
-        const constraints = {
-            video: { deviceId: deviceId ? { exact: deviceId } : { facingMode: 'user' } }
-        };
-        navigator.mediaDevices.getUserMedia(constraints).then(function(stream) {
-            video.srcObject = stream;
-            currentStream = stream;
-            video.addEventListener('loadedmetadata', () => {
-                canvas.width = video.videoWidth;
-                canvas.height = video.videoHeight;
-                requestAnimationFrame(draw);
+        function stopMediaTracks(stream) {
+            stream.getTracks().forEach(track => {
+                track.stop();
             });
-        }).catch(function(error) {
-            console.error('Error starting camera:', error);
+        }
+
+        function startCamera(deviceId) {
+            if (currentStream) {
+                stopMediaTracks(currentStream);
+            }
+            const constraints = {
+                video: { deviceId: deviceId ? { exact: deviceId } : { facingMode: 'user' } }
+            };
+            navigator.mediaDevices.getUserMedia(constraints).then(function (stream) {
+                video.srcObject = stream;
+                currentStream = stream;
+                video.addEventListener('loadedmetadata', () => {
+                    canvas.width = video.videoWidth;
+                    canvas.height = video.videoHeight;
+                    requestAnimationFrame(draw);
+                });
+            }).catch(function (error) {
+                console.error('Error starting camera:', error);
+            });
+        }
+
+        navigator.mediaDevices.enumerateDevices().then(function (devices) {
+            videoDevices = devices.filter(device => device.kind === 'videoinput');
+            startCamera(videoDevices[currentDeviceIndex]?.deviceId);
         });
-    }
 
-    navigator.mediaDevices.enumerateDevices().then(function(devices) {
-        videoDevices = devices.filter(device => device.kind === 'videoinput');
-        startCamera(videoDevices[currentDeviceIndex]?.deviceId);
-    });
-
-    switchCameraButton.addEventListener('click', function() {
-        if (videoDevices.length > 1) {
-            currentDeviceIndex = (currentDeviceIndex + 1) % videoDevices.length;
-            startCamera(videoDevices[currentDeviceIndex].deviceId);
-        }
-    });
-
-    function draw() {
-        context.drawImage(video, 0, 0, canvas.width, canvas.height);
-        
-        const photoAspectRatio = 133 / 171;
-        let rectWidth = canvas.width * 0.6;
-        let rectHeight = rectWidth / photoAspectRatio;
-
-        if (rectHeight > canvas.height * 0.8) {
-            rectHeight = canvas.height * 0.8;
-            rectWidth = rectHeight * photoAspectRatio;
-        }
-
-        const rectX = (canvas.width - rectWidth) / 2;
-        const rectY = (canvas.height - rectHeight) / 2;
-
-        context.strokeStyle = 'red';
-        context.lineWidth = 2;
-        context.strokeRect(rectX, rectY, rectWidth, rectHeight);
-
-        requestAnimationFrame(draw);
-    }
-
-    saveButton.addEventListener('click', function() {
-        const studentId = studentIdInput.value;
-        if (!studentId) {
-            alert('Please enter a student ID.');
-            return;
-        }
-
-        const photoAspectRatio = 133 / 171;
-        let rectWidth = canvas.width * 0.6;
-        let rectHeight = rectWidth / photoAspectRatio;
-
-        if (rectHeight > canvas.height * 0.8) {
-            rectHeight = canvas.height * 0.8;
-            rectWidth = rectHeight * photoAspectRatio;
-        }
-
-        const rectX = (canvas.width - rectWidth) / 2;
-        const rectY = (canvas.height - rectHeight) / 2;
-
-        hiddenCanvas.width = rectWidth;
-        hiddenCanvas.height = rectHeight;
-
-        hiddenContext.drawImage(video, rectX, rectY, rectWidth, rectHeight, 0, 0, rectWidth, rectHeight);
-
-        const dataUrl = hiddenCanvas.toDataURL('image/jpeg');
-        fetch('/Home/SavePhoto', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ studentId: studentId, photo: dataUrl ,sinif:sinifSelect.value})
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.filePath) {
-                resultDiv.innerHTML = `<img src="${data.filePath}?v=${new Date().getTime()}" class="img-fluid" />`;
-            } else {
-                resultDiv.textContent = 'Hata Var';
+        switchCameraButton.addEventListener('click', function () {
+            if (videoDevices.length > 1) {
+                currentDeviceIndex = (currentDeviceIndex + 1) % videoDevices.length;
+                startCamera(videoDevices[currentDeviceIndex].deviceId);
             }
         });
-    });
-</script>
 
-    
+        function draw() {
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+            const photoAspectRatio = 133 / 171;
+            let rectWidth = canvas.width * 0.6;
+            let rectHeight = rectWidth / photoAspectRatio;
+
+            if (rectHeight > canvas.height * 0.8) {
+                rectHeight = canvas.height * 0.8;
+                rectWidth = rectHeight * photoAspectRatio;
+            }
+
+            const rectX = (canvas.width - rectWidth) / 2;
+            const rectY = (canvas.height - rectHeight) / 2;
+
+            context.strokeStyle = 'red';
+            context.lineWidth = 2;
+            context.strokeRect(rectX, rectY, rectWidth, rectHeight);
+
+            requestAnimationFrame(draw);
+        }
+
+        saveButton.addEventListener('click', function () {
+            const studentId = studentIdInput.value;
+            if (!studentId) {
+                alert('Please enter a student ID.');
+                return;
+            }
+
+            const photoAspectRatio = 133 / 171;
+            let rectWidth = canvas.width * 0.6;
+            let rectHeight = rectWidth / photoAspectRatio;
+
+            if (rectHeight > canvas.height * 0.8) {
+                rectHeight = canvas.height * 0.8;
+                rectWidth = rectHeight * photoAspectRatio;
+            }
+
+            const rectX = (canvas.width - rectWidth) / 2;
+            const rectY = (canvas.height - rectHeight) / 2;
+
+            hiddenCanvas.width = rectWidth;
+            hiddenCanvas.height = rectHeight;
+
+            hiddenContext.drawImage(video, rectX, rectY, rectWidth, rectHeight, 0, 0, rectWidth, rectHeight);
+
+            const dataUrl = hiddenCanvas.toDataURL('image/jpeg');
+            fetch('/Home/SavePhoto', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ studentId: studentId, photo: dataUrl, sinif: sinifSelect.value })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.filePath) {
+                        resultDiv.innerHTML = `<img src="${data.filePath}?v=${new Date().getTime()}" class="img-fluid" />`;
+                    } else {
+                        resultDiv.textContent = 'Hata Var';
+                    }
+                });
+        });
+    </script>
+
+
 }

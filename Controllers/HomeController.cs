@@ -77,15 +77,17 @@ public class HomeController : Controller
             Folders = Directory.GetDirectories(photosPath).Select(Path.GetFileName).ToList()
         };
 
-        if (!string.IsNullOrEmpty(id))
+        if (string.IsNullOrEmpty(id))
         {
+            id = "9A";
+         }    
             var directoryPath = Path.Combine(photosPath, id);
             if (Directory.Exists(directoryPath))
             {
                 model.CurrentFolder = id;
                 model.Photos = Directory.GetFiles(directoryPath).Select(p => $"/photos/{id}/{Path.GetFileName(p)}").ToList();
             }
-        }
+       
 
         return View(model);
     }

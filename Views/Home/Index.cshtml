@@ -1,4 +1,4 @@
-﻿@{
+@{
     ViewData["Title"] = "Student Photo Taker";
 }
 
@@ -9,6 +9,7 @@
      <video id="video" width="640" height="480" autoplay style="display: none;"></video>
            <canvas id="canvas" width="640" height="480" style="border: 1px solid #ccc; max-width: 100%;"></canvas>
            <canvas id="hiddenCanvas" width="266" height="342" style="display: none;"></canvas>
+           <button id="switchCamera" class="btn btn-secondary mt-2">Kamera Değiştir</button>
         </div>  
          <hr />
         <div class="col-sm-12 col-md-6">
@@ -47,15 +48,47 @@
     const studentIdInput = document.getElementById('studentId');
     const sinifSelect = document.getElementById('sinif');
     const saveButton = document.getElementById('Kaydet');
+    const switchCameraButton = document.getElementById('switchCamera');
     const resultDiv = document.getElementById('result');
 
-    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-        navigator.mediaDevices.getUserMedia({ video: true }).then(function(stream) {
-            video.srcObject = stream;
-            video.play();
-            draw();
+    let currentStream;
+    let videoDevices = [];
+    let currentDeviceIndex = 0;
+
+    function stopMediaTracks(stream) {
+        stream.getTracks().forEach(track => {
+            track.stop();
         });
     }
+
+    function startCamera(deviceId) {
+        if (currentStream) {
+            stopMediaTracks(currentStream);
+        }
+        const constraints = {
+            video: { deviceId: deviceId ? { exact: deviceId } : { facingMode: 'user' } }
+        };
+        navigator.mediaDevices.getUserMedia(constraints).then(function(stream) {
+            video.srcObject = stream;
+            currentStream = stream;
+            video.play();
+            requestAnimationFrame(draw);
+        }).catch(function(error) {
+            console.error('Error starting camera:', error);
+        });
+    }
+
+    navigator.mediaDevices.enumerateDevices().then(function(devices) {
+        videoDevices = devices.filter(device => device.kind === 'videoinput');
+        startCamera(videoDevices[currentDeviceIndex]?.deviceId);
+    });
+
+    switchCameraButton.addEventListener('click', function() {
+        if (videoDevices.length > 1) {
+            currentDeviceIndex = (currentDeviceIndex + 1) % videoDevices.length;
+            startCamera(videoDevices[currentDeviceIndex].deviceId);
+        }
+    });
 
     function draw() {
         context.drawImage(video, 0, 0, 640, 480);

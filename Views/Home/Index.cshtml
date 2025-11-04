@@ -150,7 +150,7 @@
         .then(response => response.json())
         .then(data => {
             if (data.filePath) {
-                resultDiv.innerHTML = `<img src="${data.filePath}" class="img-fluid" />`;
+                resultDiv.innerHTML = `<img src="${data.filePath}?v=${new Date().getTime()}" class="img-fluid" />`;
             } else {
                 resultDiv.textContent = 'Hata Var';
             }

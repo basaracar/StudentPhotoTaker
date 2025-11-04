@@ -22,12 +22,15 @@
     <div class="col-md-9">
         @if (Model.Photos != null)
         {
+            <div class="d-flex justify-content-between align-items-center">
             <h2>@Model.CurrentFolder</h2>
+            <a href="/Home/DownloadFolder/@Model.CurrentFolder" class="btn btn-primary">Klasörü İndir</a>
+            </div>
             <div class="row">
                 @foreach (var photo in Model.Photos)
                 {
                     <div class="col-xs-2 col-md-3 mt-1">
-                        <img src="@photo" class="img-fluid img-thumbnail" />
+                        <img src="@photo?v=@DateTime.Now.Ticks" class="img-fluid img-thumbnail" />
                     </div>
                 }
             </div>

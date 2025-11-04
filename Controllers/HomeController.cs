@@ -5,6 +5,7 @@ using System.IO;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Processing;
 using System.Linq;
+using System.IO.Compression;
 
 namespace StudentPhotoTaker.Controllers;
 
@@ -87,6 +88,31 @@ public class HomeController : Controller
         }
 
         return View(model);
+    }
+
+    public IActionResult DownloadFolder(string id)
+    {
+        var photosPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "photos");
+        var directoryPath = Path.Combine(photosPath, id);
+
+        if (!Directory.Exists(directoryPath))
+        {
+            return NotFound();
+        }
+
+        var tempZipPath = Path.GetTempFileName() + ".zip";
+        ZipFile.CreateFromDirectory(directoryPath, tempZipPath);
+
+        var memory = new MemoryStream();
+        using (var stream = new FileStream(tempZipPath, FileMode.Open))
+        {
+            stream.CopyTo(memory);
+        }
+        memory.Position = 0;
+
+        System.IO.File.Delete(tempZipPath);
+
+        return File(memory, "application/zip", $"{id}.zip");
     }
 
     [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]

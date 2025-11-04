@@ -31,6 +31,9 @@
                 {
                     <div class="col-xs-1 col-md-3 col-xl-2 col-xxl-1 mt-1">
                         <img src="@photo?v=@DateTime.Now.Ticks" class="img-fluid img-thumbnail" />
+                        <figure>
+                            <figcaption>@photo.Substring(@photo.LastIndexOf('/') + 1)</figcaption>
+                        </figure>
                     </div>
                 }
             </div>

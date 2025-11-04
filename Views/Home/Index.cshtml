@@ -119,11 +119,13 @@
 
             requestAnimationFrame(draw);
         }
-
+        studentIdInput.addEventListener('focus', function () {
+            this.value="";
+        });
         saveButton.addEventListener('click', function () {
             const studentId = studentIdInput.value;
             if (!studentId) {
-                alert('Please enter a student ID.');
+                alert('Öğrenci Numarası Girin');
                 return;
             }
 

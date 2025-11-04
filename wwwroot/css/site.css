@@ -29,3 +29,24 @@ body {
 .form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
   text-align: start;
 }
+
+.photo-grid .img-thumbnail {
+    aspect-ratio: 133 / 171;
+    object-fit: cover;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    transition: transform 0.2s;
+}
+
+.photo-grid .img-thumbnail:hover {
+    transform: scale(1.05);
+}
+
+.photo-grid figure {
+    margin-top: 0.5rem;
+    text-align: center;
+}
+
+.photo-grid figcaption {
+    font-size: 0.875rem;
+    color: #6c757d;
+}

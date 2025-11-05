@@ -31,7 +31,7 @@
             <div class="row photo-grid">
                 @foreach (var photo in Model.Photos)
                 {
-                    <div class="col-6 col-md-4 col-lg-3 mt-1">
+                    <div class="col-6 col-md-4 col-lg-2 mt-1">
                         <img src="@photo?v=@DateTime.Now.Ticks" class="img-fluid img-thumbnail" />
                         <figure>
                             <figcaption>@photo.Substring(@photo.LastIndexOf('/') + 1)</figcaption>

@@ -1,61 +1,106 @@
 @model StudentPhotoTaker.Models.FotolarViewModel
 
 @{
-    ViewData["Title"] = "Fotolar";
-    string durum;
+ViewData["Title"] = "Fotolar";
+
+}
+
+@section Styles {
+<style>
+    @@media print {
+
+        .row>.col-12.col-md-3,
+        .btn-group,
+        .d-grid {
+            display: none;
+        }
+        .no-print{
+            display: none;
+        }
+        footer {
+            display: none;
+        }
+
+        header {
+            display: none;
+        }
+
+        .col-12.col-md-9 {
+            width: 100%;
+        }
+
+        @@page {
+            size: landscape;
+        }
+
+        .photo-grid {
+            display: flex;
+            flex-wrap: wrap;
+        }
+
+        .photo-grid img {
+            width: 150px;
+            margin: 5px;
+        }
+        .foto{
+            width: 16.66666667% !important;
+        }
+
+    }
+</style>
 }
 
 <div class="row">
-    <div class="col-12 col-md-3 mt-2">
-        <h2>Sınıflar</h2>
-        <div class="d-grid">
-        <select name="sec" id="sec" class="form-select">
-        @foreach (var folder in Model.Folders)
-            {
-             durum=Model.CurrentFolder == folder ? "selected" : "";
-               <option value="@folder" selected="@(durum == "selected")" >@folder</option>
-                
-            
-            }
-        </select>
-        </div>
-    
-    </div>
-    <div class="col-12 col-md-9 mt-2">
+
+    <div class="col-12 mt-2">
         @if (Model.Photos != null)
         {
-            <div class="d-flex justify-content-between align-items-center">
-            <h2>@Model.CurrentFolder</h2>
-            <a href="/Home/DownloadFolder/@Model.CurrentFolder" class="btn btn-primary">Klasörü İndir</a>
+       
+            <div class="row">
+                <div class="col-md-2">
+                    <h2>@Model.CurrentFolder</h2>
+                </div>
+                <div class="col-md-3 no-print">
+                    <select name="sec" id="sec" class="form-select">
+                        @foreach (var folder in Model.Folders)
+                        {
+                        <option value="@folder" selected="@(Model.CurrentFolder == folder)">@folder</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-7 no-print">
+                        <a href="/Home/DownloadFolder/@Model.CurrentFolder" class="btn btn-primary">Klasörü İndir</a>
+                        <button onclick="window.print()" class="btn btn-secondary">Yazdır</button>
+                </div>
             </div>
-            <div class="row photo-grid">
-                @foreach (var photo in Model.Photos)
-                {
-                    <div class="col-6 col-md-4 col-lg-2 mt-1">
-                        <img src="@photo?v=@DateTime.Now.Ticks" class="img-fluid img-thumbnail" />
-                        <figure>
-                            <figcaption>@photo.Substring(@photo.LastIndexOf('/') + 1)</figcaption>
-                        </figure>
-                    </div>
-                }
+    
+        <div class="row photo-grid" id="photoGrid">
+            @foreach (var photo in Model.Photos)
+            {
+            <div class="col-6 col-md-4 col-lg-2 mt-1 foto">
+                <img src="@photo?v=@DateTime.Now.Ticks" class="img-fluid img-thumbnail" />
+                <figure>
+                    <figcaption>@photo.Substring(@photo.LastIndexOf('/') + 1)</figcaption>
+                </figure>
             </div>
+            }
+        </div>
+
         }
         else
         {
-            <h2>Lütfen bir sınıf seçin.</h2>
+        <h2>Lütfen bir sınıf seçin.</h2>
         }
     </div>
 </div>
 @section Scripts {
 
-  <script>
-        const sec = document.getElementById("sec");
-        sec.addEventListener("change", function () {
-        
-            window.location.href = "/Fotolar/"+this.value;
-        
-        });
+<script>
+    const sec = document.getElementById("sec");
+    sec.addEventListener("change", function () {
 
+        window.location.href = "/Fotolar/" + this.value;
 
-  </script>
+    });
+</script>
 }

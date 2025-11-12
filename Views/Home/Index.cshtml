@@ -161,13 +161,30 @@
                 },
                 body: JSON.stringify({ studentId: studentId, photo: dataUrl, sinif: sinifSelect.value })
             })
-                .then(response => response.json())
+                .then(response => {
+                    if (response.ok) {
+                        return response.json();
+                    } else if (response.status === 409) { // Conflict
+                        return response.text().then(text => { throw new Error(text); });
+                    } else {
+                        throw new Error('Sunucuda hata var.');
+                    }
+                })
                 .then(data => {
+                    console.log(data.filePath);
                     if (data.filePath) {
+                     
+                        resultDiv.style.color = 'green';
                         resultDiv.innerHTML = `<img src="${data.filePath}?v=${new Date().getTime()}" class="img-fluid" />`;
+                        resultDiv.innerHTML +="<h4>OK !</h4>"
                     } else {
                         resultDiv.textContent = 'Hata Var';
+                        resultDiv.style.color = 'red';
                     }
+                })
+                .catch(error => {
+                    resultDiv.textContent = `Hata: ${error.message}`;
+                    resultDiv.style.color = 'red';
                 });
         });
     </script>

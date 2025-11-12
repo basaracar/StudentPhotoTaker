@@ -28,13 +28,13 @@ public class HomeController : Controller
     {
         if (string.IsNullOrEmpty(request.StudentId) || string.IsNullOrEmpty(request.Photo))
         {
-            return BadRequest("Student ID and photo are required.");
+            return BadRequest("Öğrenci ID veya resim boş olamaz.");
         }
 
         var photoParts = request.Photo.Split(',');
         if (photoParts.Length != 2)
         {
-            return BadRequest("Invalid photo format.");
+            return BadRequest("Hatalı resim formatı.");
         }
 
         var imageBytes = Convert.FromBase64String(photoParts[1]);
@@ -55,6 +55,11 @@ public class HomeController : Controller
 
             var fileName = $"{request.StudentId}.jpg";
             var filePath = Path.Combine(directory, fileName);
+
+            if (System.IO.File.Exists(filePath))
+            {
+                return Conflict($"{request.Sinif} sınıfında {request.StudentId} numaralı öğrenci zaten kayıt edilmiş .");
+            }
 
             image.Save(filePath);
 

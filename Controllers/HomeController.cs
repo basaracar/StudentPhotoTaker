@@ -91,8 +91,9 @@ public class HomeController : Controller
             {
                 model.CurrentFolder = id;
                 model.Photos = Directory.GetFiles(directoryPath)
-                                        .Select(p => $"/photos/{id}/{Path.GetFileName(p)}")
-                                        .OrderBy(p => p)
+                                        .Select(p => Path.GetFileName(p))
+                                        .OrderBy(p => int.Parse(Path.GetFileNameWithoutExtension(p)))
+                                        .Select(p => $"/photos/{id}/{p}")
                                         .ToList();
             }
 

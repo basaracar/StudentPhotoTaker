@@ -79,7 +79,7 @@ public class HomeController : Controller
 
         var model = new FotolarViewModel
         {
-            Folders = Directory.GetDirectories(photosPath).Select(Path.GetFileName).ToList()
+            Folders = Directory.GetDirectories(photosPath).Select(Path.GetFileName).OrderBy(f => f).ToList()
         };
 
         if (string.IsNullOrEmpty(id))
@@ -90,9 +90,11 @@ public class HomeController : Controller
             if (Directory.Exists(directoryPath))
             {
                 model.CurrentFolder = id;
-                model.Photos = Directory.GetFiles(directoryPath).Select(p => $"/photos/{id}/{Path.GetFileName(p)}").ToList();
+                model.Photos = Directory.GetFiles(directoryPath)
+                                        .Select(p => $"/photos/{id}/{Path.GetFileName(p)}")
+                                        .OrderBy(p => p)
+                                        .ToList();
             }
-       
 
         return View(model);
     }
@@ -122,9 +124,55 @@ public class HomeController : Controller
         return File(memory, "application/zip", $"{id}.zip");
     }
 
+    public IActionResult DownloadAllFolders()
+    {
+        var photosPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "photos");
+
+        if (!Directory.Exists(photosPath))
+        {
+            return NotFound();
+        }
+
+        var tempZipPath = Path.GetTempFileName() + ".zip";
+        ZipFile.CreateFromDirectory(photosPath, tempZipPath);
+
+        var memory = new MemoryStream();
+        using (var stream = new FileStream(tempZipPath, FileMode.Open))
+        {
+            stream.CopyTo(memory);
+        }
+        memory.Position = 0;
+
+        System.IO.File.Delete(tempZipPath);
+
+        return File(memory, "application/zip", "tum_fotolar.zip");
+    }
+
+    [HttpPost]
+    public IActionResult DeletePhoto([FromBody] SavePhotoRequest request)
+    {
+        if (string.IsNullOrEmpty(request.Photo))
+        {
+            return BadRequest("Resim yolu boş olamaz.");
+        }
+
+        var webRootPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
+        var filePath = Path.Combine(webRootPath, request.Photo.TrimStart('/'));
+
+        if (System.IO.File.Exists(filePath))
+        {
+            System.IO.File.Delete(filePath);
+            return Ok();
+        }
+
+        return NotFound();
+    }
+
     [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
     public IActionResult Error()
     {
         return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
     }
+
+
 }

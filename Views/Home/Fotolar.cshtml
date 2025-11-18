@@ -1,22 +1,43 @@
 @model StudentPhotoTaker.Models.FotolarViewModel
 
 @{
-ViewData["Title"] = "Fotolar";
-
+    ViewData["Title"] = "Fotolar";
 }
 
 @section Styles {
 <style>
-    @@media print {
+    .foto {
+        position: relative;
+        text-align: center;
+    }
 
-        .row>.col-12.col-md-3,
+    .delete-btn {
+        position: absolute;
+        top: 5px;
+        right: 20px;
+        background: red;
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 20px;
+        height: 20px;
+        line-height: 20px;
+        text-align: center;
+        cursor: pointer;
+        font-weight: bold;
+    }
+
+    @@media print {
+        .row > .col-12.col-md-3,
         .btn-group,
         .d-grid {
             display: none;
         }
-        .no-print{
+
+        .no-print {
             display: none;
         }
+
         footer {
             display: none;
         }
@@ -42,20 +63,18 @@ ViewData["Title"] = "Fotolar";
             width: 150px;
             margin: 5px;
         }
-        .foto{
+
+        .foto {
             width: 16.66666667% !important;
         }
-
     }
 </style>
 }
 
 <div class="row">
-
     <div class="col-12 mt-2">
         @if (Model.Photos != null)
         {
-       
             <div class="row">
                 <div class="col-md-2">
                     <h2>@Model.CurrentFolder</h2>
@@ -64,43 +83,66 @@ ViewData["Title"] = "Fotolar";
                     <select name="sec" id="sec" class="form-select">
                         @foreach (var folder in Model.Folders)
                         {
-                        <option value="@folder" selected="@(Model.CurrentFolder == folder)">@folder</option>
+                            <option value="@folder" selected="@(Model.CurrentFolder == folder)">@folder</option>
                         }
                     </select>
                 </div>
                 <div class="col-md-7 no-print">
-                        <a href="/Home/DownloadFolder/@Model.CurrentFolder" class="btn btn-primary">Klasörü İndir</a>
-                        <button onclick="window.print()" class="btn btn-secondary">Yazdır</button>
+                    <a href="/Home/DownloadFolder/@Model.CurrentFolder" class="btn btn-primary">Klasörü İndir</a>
+                    <a href="/Home/DownloadAllFolders" class="btn btn-info">Tümünü İndir</a>
+                    <button onclick="window.print()" class="btn btn-secondary">Yazdır</button>
                 </div>
             </div>
-    
-        <div class="row photo-grid" id="photoGrid">
-            @foreach (var photo in Model.Photos)
-            {
-            <div class="col-6 col-md-4 col-lg-2 mt-1 foto" style="text-align:center">
-                <img src="@photo?v=@DateTime.Now.Ticks" class="img-fluid img-thumbnail" />
-                <figure>
-                    <figcaption>@photo.Substring(@photo.LastIndexOf('/') + 1)</figcaption>
-                </figure>
-            </div>
-            }
-        </div>
 
+            <div class="row photo-grid" id="photoGrid">
+                @foreach (var photo in Model.Photos)
+                {
+                    <div class="col-6 col-md-4 col-lg-2 mt-1 foto">
+                        <button class="delete-btn no-print" onclick="deletePhoto('@photo', this)">&times;</button>
+                        <img src="@photo?v=@DateTime.Now.Ticks" class="img-fluid img-thumbnail" />
+                        <figure>
+                            <figcaption>@photo.Substring(photo.LastIndexOf('/') + 1)</figcaption>
+                        </figure>
+                    </div>
+                }
+            </div>
         }
         else
         {
-        <h2>Lütfen bir sınıf seçin.</h2>
+            <h2>Lütfen bir sınıf seçin.</h2>
         }
     </div>
 </div>
-@section Scripts {
 
+@section Scripts {
 <script>
     const sec = document.getElementById("sec");
     sec.addEventListener("change", function () {
-
         window.location.href = "/Fotolar/" + this.value;
-
     });
+
+    function deletePhoto(photoPath, btnElement) {
+        if (confirm("Bu fotoğrafı silmek istediğinizden emin misiniz?")) {
+            fetch('/Home/DeletePhoto', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ Photo: photoPath })
+            })
+            .then(response => {
+                if (response.ok) {
+                    // Remove the photo's parent element from the DOM
+                    btnElement.parentElement.remove();
+                } else {
+                    alert("Fotoğraf silinirken bir hata oluştu.");
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert("Fotoğraf silinirken bir hata oluştu.");
+            });
+        }
+    }
 </script>
 }

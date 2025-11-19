@@ -6,6 +6,7 @@ using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Processing;
 using System.Linq;
 using System.IO.Compression;
+using System.Collections.Generic;
 
 namespace StudentPhotoTaker.Controllers;
 
@@ -79,7 +80,8 @@ public class HomeController : Controller
 
         var model = new FotolarViewModel
         {
-            Folders = Directory.GetDirectories(photosPath).Select(Path.GetFileName).OrderBy(f => f).ToList()
+            Folders = Directory.GetDirectories(photosPath).Select(Path.GetFileName).OrderBy(f => f).ToList(),
+            StudentNames = LoadStudentNames()
         };
 
         if (string.IsNullOrEmpty(id))
@@ -175,5 +177,26 @@ public class HomeController : Controller
         return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
     }
 
+    private Dictionary<string, string> LoadStudentNames()
+    {
+        var studentNames = new Dictionary<string, string>();
+        var filePath = Path.Combine(Directory.GetCurrentDirectory(), "data", "ogrenciListesi.csv");
 
+        if (System.IO.File.Exists(filePath))
+        {
+            var lines = System.IO.File.ReadAllLines(filePath);
+            foreach (var line in lines)
+            {
+                var parts = line.Split(',');
+                if (parts.Length >= 3 && int.TryParse(parts[0], out _))
+                {
+                    var studentId = parts[0].Trim();
+                    var studentName = $"{parts[1].Trim()} {parts[2].Trim()}";
+                    studentNames[studentId] = studentName;
+                }
+            }
+        }
+
+        return studentNames;
+    }
 }

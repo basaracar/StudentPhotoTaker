@@ -97,11 +97,16 @@
             <div class="row photo-grid" id="photoGrid">
                 @foreach (var photo in Model.Photos)
                 {
+                    var studentId = System.IO.Path.GetFileNameWithoutExtension(photo);
                     <div class="col-6 col-md-4 col-lg-2 mt-1 foto">
                         <button class="delete-btn no-print" onclick="deletePhoto('@photo', this)">&times;</button>
                         <img src="@photo?v=@DateTime.Now.Ticks" class="img-fluid img-thumbnail" />
                         <figure>
-                            <figcaption>@photo.Substring(photo.LastIndexOf('/') + 1)</figcaption>
+                            <figcaption>
+                                @System.IO.Path.GetFileName(photo).ToString().Substring(0,System.IO.Path.GetFileName(photo).ToString().Length - 4)
+                                <br />
+                                @(Model.StudentNames.GetValueOrDefault(studentId))
+                            </figcaption>
                         </figure>
                     </div>
                 }
